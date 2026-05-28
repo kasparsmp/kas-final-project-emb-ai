@@ -8,10 +8,19 @@ def emotion_detector(text_to_analyze):
     
     response = requests.post(url, json=input_json, headers=headers)
     
-    # 1. Pārvēršam atbildes tekstu par Python vārdnīcu
-    formatted_response = json.loads(response.text)
+    # Pārbaudām, vai serveris atgrieza statusa kodu 400 (tukša ievade)
+    if response.status_code == 400:
+        return {
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None
+        }
     
-    # 2. Izgūstam emociju sadaļu no Watson struktūras
+    # Ja viss kārtībā, apstrādājam datus kā parasti
+    formatted_response = json.loads(response.text)
     emotions = formatted_response['emotionPredictions'][0]['emotion']
     
     anger_score = emotions['anger']
@@ -20,11 +29,9 @@ def emotion_detector(text_to_analyze):
     joy_score = emotions['joy']
     sadness_score = emotions['sadness']
     
-    # 3. Loģika dominējošās emocijas atrašanai
     dominant_emotion = max(emotions, key=emotions.get)
     
-    # 4. Izveidojam precīzi prasīto izvades formātu
-    output_format = {
+    return {
         'anger': anger_score,
         'disgust': disgust_score,
         'fear': fear_score,
@@ -32,5 +39,3 @@ def emotion_detector(text_to_analyze):
         'sadness': sadness_score,
         'dominant_emotion': dominant_emotion
     }
-    
-    return output_format
